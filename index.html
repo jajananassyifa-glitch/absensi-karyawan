@@ -39,6 +39,10 @@
       background-color: #0d47a1; color: white; padding: 8px 12px;
       border-radius: 6px; margin-bottom: 15px; font-weight: 500; font-size: 14px;
     }
+    .running-text-lampiran {
+      background-color: #e8f5e9; color: #1b5e20; padding: 10px 14px;
+      border-radius: 6px; margin-top: 10px; font-weight: bold; font-size: 14px; border: 1px solid #c8e6c9;
+    }
     .header-section { text-align: center; margin-bottom: 20px; }
     #logo-img { max-width: 140px; height: auto; margin-bottom: 10px; }
     .header-arabic { font-size: 26px; font-family: 'Amiri', 'Traditional Arabic', serif; color: #0d47a1; margin: 10px 0; }
@@ -104,7 +108,7 @@
       </div>
     </div>
 
-    <!-- Teks Berjalan -->
+    <!-- Teks Berjalan Utama Header -->
     <div class="running-text-container">
       <marquee id="marqueeText" behavior="scroll" direction="left">Selamat Datang di Aplikasi Presensi Karyawan. Dimohon untuk selalu melakukan verifikasi kehadiran tepat waktu.</marquee>
     </div>
@@ -123,10 +127,15 @@
 
     <!-- HALAMAN UTAMA KARYAWAN -->
     <div id="page-karyawan">
-      <!-- Lampiran Teks Informasi Karyawan -->
+      <!-- Lampiran Teks Informasi Karyawan & Teks Berjalan Lampiran -->
       <div class="card" style="border-left-color: #2e7d32;">
         <h4 style="margin-top: 0; color: #2e7d32;">📌 Pengumuman / Lampiran Karyawan:</h4>
         <div id="displayLampiranTeks" style="white-space: pre-line; color: #333;">Memuat lampiran...</div>
+        
+        <!-- Teks Berjalan Khusus Lampiran Karyawan -->
+        <div class="running-text-lampiran">
+          📢 <marquee id="marqueeLampiranKaryawan" behavior="scroll" direction="left" style="display: inline-block; vertical-align: middle; width: 90%;">Pengumuman penting untuk seluruh karyawan akan tampil berjalan di sini.</marquee>
+        </div>
       </div>
 
       <div class="card" id="sec-kode-unik">
@@ -155,6 +164,15 @@
       <div class="card">
         <h2 style="color: #0d47a1; margin-top: 0;">Panel Kontrol Dasbor Admin</h2>
         
+        <!-- Lampiran Admin / Teks Berjalan Admin -->
+        <div class="card" style="border-left-color: #0d47a1; background: #e3f2fd;">
+          <h4 style="margin-top: 0; color: #0d47a1;">📌 Info / Lampiran Dasbor Admin:</h4>
+          <div id="displayLampiranAdmin" style="white-space: pre-line; color: #333; margin-bottom: 8px;">Memuat lampiran admin...</div>
+          <div class="running-text-container" style="margin-bottom: 0;">
+            📢 <marquee id="marqueeLampiranAdmin" behavior="scroll" direction="left" style="display: inline-block; vertical-align: middle; width: 90%;">Teks berjalan lampiran admin tampil di sini.</marquee>
+          </div>
+        </div>
+
         <div style="margin-bottom: 20px;">
           <h4>Pengaturan Tampilan:</h4>
           <button class="btn btn-secondary" onclick="ubahLogo()">Ganti Logo Permanen (Password: logo@1234#)</button>
@@ -264,7 +282,16 @@
           const data = doc.data();
           if (data.logoUrl) document.getElementById('logo-img').src = data.logoUrl;
           if (data.runningText) document.getElementById('marqueeText').innerText = data.runningText;
-          if (data.lampiranTeks) document.getElementById('displayLampiranTeks').innerText = data.lampiranTeks;
+          
+          if (data.lampiranTeks) {
+            document.getElementById('displayLampiranTeks').innerText = data.lampiranTeks;
+            document.getElementById('displayLampiranAdmin').innerText = data.lampiranTeks;
+          }
+
+          if (data.runningTextLampiran) {
+            document.getElementById('marqueeLampiranKaryawan').innerText = data.runningTextLampiran;
+            document.getElementById('marqueeLampiranAdmin').innerText = data.runningTextLampiran;
+          }
         }
       });
 
@@ -360,21 +387,23 @@
       } else if (pass !== null) alert("Password Salah!");
     }
 
-    // GANTI TEKS BERJALAN & LAMPIRAN KARYAWAN
+    // GANTI TEKS BERJALAN & LAMPIRAN KARYAWAN & ADMIN
     async function ubahPengumuman() {
       const pass = prompt("Masukkan Password Pengaturan Teks:\n(Password: teks@1234#)");
       if (pass === "teks@1234#") {
-        const teksBerjalanBaru = prompt("Masukkan Teks Berjalan Baru (Marquee):");
-        const lampiranBaru = prompt("Masukkan Teks Lampiran/Pengumuman Karyawan Baru:");
+        const teksBerjalanBaru = prompt("1. Masukkan Teks Berjalan Header Utama:");
+        const lampiranBaru = prompt("2. Masukkan Teks Lampiran/Pengumuman Biasa:");
+        const teksBerjalanLampiranBaru = prompt("3. Masukkan Teks Berjalan Khusus Lampiran Karyawan/Admin:");
 
-        if (teksBerjalanBaru !== null || lampiranBaru !== null) {
+        if (teksBerjalanBaru !== null || lampiranBaru !== null || teksBerjalanLampiranBaru !== null) {
           try {
             const updateObj = {};
             if (teksBerjalanBaru) updateObj.runningText = teksBerjalanBaru;
             if (lampiranBaru) updateObj.lampiranTeks = lampiranBaru;
+            if (teksBerjalanLampiranBaru) updateObj.runningTextLampiran = teksBerjalanLampiranBaru;
 
             await db.collection('settings').doc('app_config').set(updateObj, { merge: true });
-            alert("Teks Berjalan & Lampiran Karyawan Berhasil Diperbarui!");
+            alert("Teks Berjalan Utama, Lampiran, & Teks Berjalan Lampiran Berhasil Diperbarui!");
           } catch (err) { alert("Gagal menyimpan teks: " + err.message); }
         }
       } else if (pass !== null) alert("Password Salah!");
