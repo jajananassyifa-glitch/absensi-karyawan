@@ -104,7 +104,7 @@
       </div>
     </div>
 
-    <!-- Fitur Teks Berjalan -->
+    <!-- Teks Berjalan -->
     <div class="running-text-container">
       <marquee id="marqueeText" behavior="scroll" direction="left">Selamat Datang di Aplikasi Presensi Karyawan. Dimohon untuk selalu melakukan verifikasi kehadiran tepat waktu.</marquee>
     </div>
@@ -236,12 +236,14 @@
     // KONFIGURASI FIREBASE ANDA
     // -------------------------------------------------------------------
     const firebaseConfig = {
-      apiKey: "AIzaSyD8x9XxxxExampleKey123", 
+      apiKey: "AIzaSyA8NMHG5gFfcgiDFqCw57OB9bEWdqqHVOw",
       authDomain: "absensi-karyawan-df06f.firebaseapp.com",
+      databaseURL: "https://absensi-karyawan-df06f-default-rtdb.asia-southeast1.firebasedatabase.app",
       projectId: "absensi-karyawan-df06f",
-      storageBucket: "absensi-karyawan-df06f.appspot.com",
-      messagingSenderId: "1234567890", 
-      appId: "1:1234567890:web:abc123def456" 
+      storageBucket: "absensi-karyawan-df06f.firebasestorage.app",
+      messagingSenderId: "41711355003",
+      appId: "1:41711355003:web:ede91fc981f4a208284ede",
+      measurementId: "G-X922YZKR94"
     };
 
     firebase.initializeApp(firebaseConfig);
@@ -254,7 +256,7 @@
     let currentStream = null;
     let isAiLoaded = false;
 
-    // Membaca Konfigurasi & Data dari Firebase
+    // Membaca Konfigurasi & Data dari Firebase Realtime
     function muatDataFirebase() {
       // Load Pengaturan (Logo, Teks Berjalan, & Lampiran Teks)
       db.collection('settings').doc('app_config').onSnapshot((doc) => {
@@ -358,7 +360,7 @@
       } else if (pass !== null) alert("Password Salah!");
     }
 
-    // FITUR: GANTI TEKS BERJALAN & LAMPIRAN KARYAWAN
+    // GANTI TEKS BERJALAN & LAMPIRAN KARYAWAN
     async function ubahPengumuman() {
       const pass = prompt("Masukkan Password Pengaturan Teks:\n(Password: teks@1234#)");
       if (pass === "teks@1234#") {
@@ -442,7 +444,7 @@
       });
     }
 
-    // FITUR: MODAL MEMPERBESAR FOTO & BIODATA KARYAWAN
+    // MODAL MEMPERBESAR FOTO & BIODATA KARYAWAN
     function tampilkanBiodata(docId) {
       const k = daftarKaryawan.find(item => item.docId === docId);
       if (!k) return;
