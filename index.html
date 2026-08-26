@@ -49,7 +49,7 @@
     .header-arabic { font-size: 26px; font-family: 'Amiri', 'Traditional Arabic', serif; color: #0d47a1; margin: 10px 0; }
     .sub-title { font-style: italic; color: #555; margin-bottom: 20px; }
     
-    /* STYLING LAMPIRAN DENGAN BACKGROUND WATERMARK MEMENUHI AREA & LEBIH JELAS */
+    /* STYLING LAMPIRAN DENGAN BACKGROUND WATERMARK SAMAR */
     .card { 
       background-color: #f8f9fa; border: 1px solid #e0e0e0; border-left: 5px solid #1976d2; border-radius: 8px; padding: 20px; margin-bottom: 20px; 
     }
@@ -62,13 +62,11 @@
     .card-lampiran::before {
       content: "";
       position: absolute;
-      top: 0; left: 0; right: 0; bottom: 0;
-      width: 100%; height: 100%;
+      top: 0; left: 0; width: 100%; height: 100%;
       background-image: var(--bg-lampiran-url, none);
-      background-size: 100% 100%; /* Memenuhi seluruh area lampiran */
-      background-repeat: no-repeat;
+      background-size: cover;
       background-position: center;
-      opacity: 0.35; /* Ditingkatkan ke 0.35 agar gambarnya tampak lebih jelas */
+      opacity: 0.15; /* Efek samar-samar (15% Transparansi) */
       z-index: 0;
       pointer-events: none;
     }
@@ -156,7 +154,7 @@
 
     <!-- HALAMAN UTAMA KARYAWAN -->
     <div id="page-karyawan">
-      <!-- Lampiran Karyawan (Background Watermark Memenuhi Area & Jelas) -->
+      <!-- Lampiran Teks Informasi Karyawan & Teks Berjalan Lampiran (Diberi Background Samar) -->
       <div class="card card-lampiran" style="border-left-color: #2e7d32;">
         <div class="card-lampiran-content">
           <h4 style="margin-top: 0; color: #2e7d32;">📌 Pengumuman / Lampiran Karyawan:</h4>
@@ -195,7 +193,7 @@
       <div class="card">
         <h2 style="color: #0d47a1; margin-top: 0;">Panel Kontrol Dasbor Admin</h2>
         
-        <!-- Lampiran Admin (Background Watermark Memenuhi Area & Jelas) -->
+        <!-- Lampiran Admin / Teks Berjalan Admin (Diberi Background Samar) -->
         <div class="card card-lampiran" style="border-left-color: #0d47a1;">
           <div class="card-lampiran-content">
             <h4 style="margin-top: 0; color: #0d47a1;">📌 Info / Lampiran Dasbor Admin:</h4>
@@ -298,7 +296,7 @@
 
   <script>
     // -------------------------------------------------------------------
-    // KONFIGURASI FIREBASE
+    // KONFIGURASI FIREBASE ANDA
     // -------------------------------------------------------------------
     const firebaseConfig = {
       apiKey: "AIzaSyA8NMHG5gFfcgiDFqCw57OB9bEWdqqHVOw",
@@ -321,14 +319,14 @@
     let currentStream = null;
     let isAiLoaded = false;
     
-    // Variabel Pengaturan Geofencing
+    // Variabel Pengaturan Lokasi Absen Kantor
     let kantorLat = null;
     let kantorLng = null;
-    let maxRadiusMeter = 100;
+    let maxRadiusMeter = 100; // Default radius 100 meter
 
-    // Menghitung Jarak GPS (Haversine Formula) dalam Meter
+    // Fungsi Menghitung Jarak GPS Antara 2 Koordinat (Rumus Haversine) dalam Meter
     function hitungJarakMeter(lat1, lon1, lat2, lon2) {
-      const R = 6371000;
+      const R = 6371000; // Radius bumi dalam meter
       const dLat = (lat2 - lat1) * Math.PI / 180;
       const dLon = (lon2 - lon1) * Math.PI / 180;
       const a = 
@@ -336,11 +334,12 @@
         Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
         Math.sin(dLon/2) * Math.sin(dLon/2);
       const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-      return R * c;
+      return R * c; // Hasil dalam satuan meter
     }
 
-    // Memuat data dari Firebase
+    // Membaca Konfigurasi & Data dari Firebase Realtime
     function muatDataFirebase() {
+      // Load Pengaturan (Logo, Teks Berjalan, Lampiran Teks, Background, & Lokasi)
       db.collection('settings').doc('app_config').onSnapshot((doc) => {
         if (doc.exists) {
           const data = doc.data();
@@ -357,10 +356,12 @@
             document.getElementById('marqueeLampiranAdmin').innerText = data.runningTextLampiran;
           }
 
+          // Background Lampiran Transparan/Samar
           if (data.bgLampiranUrl) {
             document.documentElement.style.setProperty('--bg-lampiran-url', `url('${data.bgLampiranUrl}')`);
           }
 
+          // Load Pengaturan Geofencing Lokasi Kantor
           if (data.kantorLat !== undefined) {
             kantorLat = data.kantorLat;
             document.getElementById('cfgLat').value = data.kantorLat;
@@ -376,6 +377,7 @@
         }
       });
 
+      // Load Data Karyawan Realtime
       db.collection('karyawan').onSnapshot((snapshot) => {
         daftarKaryawan = [];
         snapshot.forEach((doc) => {
@@ -467,6 +469,7 @@
       } else if (pass !== null) alert("Password Salah!");
     }
 
+    // GANTI BACKGROUND LAMPIRAN SAMAR
     async function ubahBackgroundLampiran() {
       const pass = prompt("Masukkan Password Ganti Background Lampiran:\n(Password: background@1234#)");
       if (pass === "background@1234#") {
@@ -474,12 +477,13 @@
         if (urlBgBaru) {
           try {
             await db.collection('settings').doc('app_config').set({ bgLampiranUrl: urlBgBaru }, { merge: true });
-            alert("Background Lampiran Berhasil Diperbarui!");
+            alert("Background Lampiran Samar-samar Berhasil Diperbarui!");
           } catch (err) { alert("Gagal menyimpan background: " + err.message); }
         }
       } else if (pass !== null) alert("Password Salah!");
     }
 
+    // GANTI TEKS BERJALAN & LAMPIRAN KARYAWAN & ADMIN
     async function ubahPengumuman() {
       const pass = prompt("Masukkan Password Pengaturan Teks:\n(Password: teks@1234#)");
       if (pass === "teks@1234#") {
@@ -501,6 +505,7 @@
       } else if (pass !== null) alert("Password Salah!");
     }
 
+    // SIMPAN PENGATURAN LOKASI KANTOR
     async function simpanLokasiKantor() {
       const lat = parseFloat(document.getElementById('cfgLat').value);
       const lng = parseFloat(document.getElementById('cfgLng').value);
@@ -594,6 +599,7 @@
       });
     }
 
+    // MODAL MEMPERBESAR FOTO & BIODATA KARYAWAN
     function tampilkanBiodata(docId) {
       const k = daftarKaryawan.find(item => item.docId === docId);
       if (!k) return;
@@ -645,6 +651,7 @@
       const infoDiv = document.getElementById('infoLokasi');
       infoDiv.innerHTML = "<em>Memindai lokasi GPS & Verifikasi Wajah...</em>";
 
+      // 1. CEK PERSYARATAN LOKASI KANTOR (GEOFENCING)
       if (!navigator.geolocation) {
         alert("Fitur Geolocation tidak didukung di peramban/perangkat Anda.");
         return;
@@ -664,6 +671,7 @@
           }
         }
 
+        // 2. JIKA LOKASI MASUK RADIUS, VERIFIKASI WAJAH AI
         const videoElem = document.getElementById('webcamKaryawan');
         const currentDetection = await faceapi.detectSingleFace(videoElem).withFaceLandmarks().withFaceDescriptor();
 
@@ -680,6 +688,7 @@
           return;
         }
 
+        // 3. PROSES ABSENSI BERHASIL
         try {
           await db.collection('karyawan').doc(karyawanAktif.docId).update({
             totalHadir: firebase.firestore.FieldValue.increment(1),
