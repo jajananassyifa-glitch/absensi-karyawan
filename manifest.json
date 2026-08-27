@@ -1,7 +1,7 @@
 {
   "name": "Aplikasi Presensi Karyawan",
   "short_name": "Presensi",
-  "description": "Aplikasi Presensi Karyawan & Dasbor Admin",
+  "description": "Aplikasi Presensi Karyawan &amp; Dasbor Admin",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#ffffff",
