@@ -1,0 +1,17 @@
+{
+  "name": "Aplikasi Presensi Karyawan",
+  "short_name": "Presensi",
+  "description": "Aplikasi Presensi Karyawan & Dasbor Admin",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0d47a1",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/9187/9187604.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
