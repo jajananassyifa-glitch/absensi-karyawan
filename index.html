@@ -4,58 +4,61 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Aplikasi Presensi Karyawan & Dasbor Admin</title>
-  {
-  "name": "Aplikasi Presensi Karyawan",
-  "short_name": "Presensi",
-  "description": "Aplikasi Presensi Karyawan &amp; Dasbor Admin",
-  "start_url": "./index.html",
-  "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#0d47a1",
-  "icons": [
-    {
-      "src": "https://cdn-icons-png.flaticon.com/512/9187/9187604.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "https://cdn-icons-png.flaticon.com/512/9187/9187604.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
-    }
-  ]
-}
-  
+
+  <!-- Web App Manifest (Embedded Data URI agar valid di PWABuilder & Browser) -->
+  <link rel="manifest" href='data:application/manifest+json,{
+    "name": "Laporan Kerja Teknisi Elhajj",
+    "short_name": "Teknisi Elhajj",
+    "description": "Aplikasi Presensi Karyawan & Dasbor Admin Hotel Grand El Hajj Banten",
+    "start_url": "./",
+    "display": "standalone",
+    "background_color": "#ffffff",
+    "theme_color": "#b89028",
+    "icons": [
+      {
+        "src": "https://cdn-icons-png.flaticon.com/512/9187/9187604.png",
+        "sizes": "192x192",
+        "type": "image/png"
+      },
+      {
+        "src": "https://cdn-icons-png.flaticon.com/512/9187/9187604.png",
+        "sizes": "512x512",
+        "type": "image/png"
+      }
+    ]
+  }'>
+  <meta name="theme-color" content="#b89028">
+
   <!-- Firebase SDK (v9 Compat Mode) -->
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
-  <!-- Library Face API untuk Pemindaian AI Wajah -->
+  <!-- Library Face API & XLSX -->
   <script defer src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
-  
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
   <style>
     * { box-sizing: border-box; }
     body {
       margin: 0; padding: 0;
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       background-color: #ffffff;
-      background-image: linear-gradient(135deg, #e3f2fd 0%, #90caf9 100%);
+      background-image: linear-gradient(135deg, #f5f0e1 0%, #d4af37 100%);
       background-size: cover; background-attachment: fixed;
       min-height: 100vh; display: flex; flex-direction: column; align-items: center;
     }
     .container {
-      background-color: #ffffff; border-top: 6px solid #0d47a1;
+      background-color: #ffffff; border-top: 6px solid #b89028;
       box-shadow: 0 8px 24px rgba(0,0,0,0.15); border-radius: 12px;
       width: 90%; max-width: 950px; margin: 30px auto; padding: 25px; position: relative;
     }
     .top-bar {
       display: flex; justify-content: space-between; align-items: center;
-      margin-bottom: 15px; background: #e3f2fd; padding: 10px 15px; border-radius: 8px;
+      margin-bottom: 15px; background: #fffdf0; padding: 10px 15px; border-radius: 8px; border: 1px solid #e0d0a0;
     }
     .running-text-container {
-      background-color: #0d47a1; color: white; padding: 8px 12px;
+      background-color: #b89028; color: white; padding: 8px 12px;
       border-radius: 6px; margin-bottom: 15px; font-weight: 500; font-size: 14px;
     }
     .running-text-lampiran {
@@ -64,47 +67,35 @@
       position: relative; z-index: 2;
     }
     .header-section { text-align: center; margin-bottom: 20px; }
-    #logo-img { max-width: 140px; height: auto; margin-bottom: 10px; }
-    .header-arabic { font-size: 26px; font-family: 'Amiri', 'Traditional Arabic', serif; color: #0d47a1; margin: 10px 0; }
+    #logo-img { max-width: 160px; height: auto; margin-bottom: 10px; }
+    .header-arabic { font-size: 26px; font-family: 'Amiri', 'Traditional Arabic', serif; color: #b89028; margin: 10px 0; }
     .sub-title { font-style: italic; color: #555; margin-bottom: 20px; }
-    
-    /* STYLING LAMPIRAN DENGAN BACKGROUND WATERMARK SAMAR */
+
     .card { 
-      background-color: #f8f9fa; border: 1px solid #e0e0e0; border-left: 5px solid #1976d2; border-radius: 8px; padding: 20px; margin-bottom: 20px; 
+      background-color: #f8f9fa; border: 1px solid #e0e0e0; border-left: 5px solid #b89028; border-radius: 8px; padding: 20px; margin-bottom: 20px; 
     }
     .card-lampiran {
-      position: relative;
-      overflow: hidden;
-      background-color: #ffffff;
-      z-index: 1;
+      position: relative; overflow: hidden; background-color: #ffffff; z-index: 1;
     }
     .card-lampiran::before {
-      content: "";
-      position: absolute;
-      top: 0; left: 0; width: 100%; height: 100%;
-      background-image: var(--bg-lampiran-url, none);
-      background-size: cover;
-      background-position: center;
-      opacity: 0.15; /* Efek samar-samar (15% Transparansi) */
-      z-index: 0;
-      pointer-events: none;
+      content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      background-image: var(--bg-lampiran-url, none); background-size: cover; background-position: center;
+      opacity: 0.15; z-index: 0; pointer-events: none;
     }
-    .card-lampiran-content {
-      position: relative;
-      z-index: 2;
-    }
+    .card-lampiran-content { position: relative; z-index: 2; }
 
     .btn { padding: 10px 18px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.3s; margin: 5px 0; }
-    .btn-primary { background-color: #1976d2; color: white; }
-    .btn-primary:hover { background-color: #1565c0; }
-    .btn-admin { background-color: #0d47a1; color: white; }
-    .btn-admin:hover { background-color: #002171; }
+    .btn-primary { background-color: #b89028; color: white; }
+    .btn-primary:hover { background-color: #96741e; }
+    .btn-admin { background-color: #2c3e50; color: white; }
+    .btn-admin:hover { background-color: #1a252f; }
     .btn-danger { background-color: #d32f2f; color: white; }
     .btn-danger:hover { background-color: #9a0007; }
     .btn-success { background-color: #2e7d32; color: white; }
     .btn-success:hover { background-color: #1b5e20; }
     .btn-secondary { background-color: #616161; color: white; }
     .btn-secondary:hover { background-color: #424242; }
+    
     input[type="password"], input[type="text"], textarea { width: 100%; max-width: 400px; padding: 10px; border: 1px solid #ced4da; border-radius: 6px; margin-bottom: 10px; }
     .webcam-box { width: 100%; max-width: 380px; height: 280px; background-color: #111; border-radius: 8px; margin: 15px auto; display: flex; justify-content: center; align-items: center; color: #fff; overflow: hidden; }
     video { width: 100%; height: 100%; object-fit: cover; }
@@ -112,11 +103,11 @@
     .chart-box { flex: 1; min-width: 280px; max-width: 400px; background: #ffffff; padding: 15px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
     table { width: 100%; border-collapse: collapse; margin-top: 15px; background: #ffffff; }
     th, td { border: 1px solid #dee2e6; padding: 10px; text-align: left; }
-    th { background-color: #1976d2; color: white; }
+    th { background-color: #b89028; color: white; }
     .status-text { font-size: 14px; font-weight: bold; color: #2e7d32; }
     .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center; z-index: 9999; }
     .modal-box { background: white; padding: 25px; border-radius: 8px; width: 90%; max-width: 450px; text-align: center; position: relative; }
-    .img-avatar { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; cursor: pointer; border: 2px solid #1976d2; }
+    .img-avatar { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; cursor: pointer; border: 2px solid #b89028; }
   </style>
 </head>
 <body id="app-backdrop">
@@ -124,7 +115,7 @@
   <!-- Modal Login Admin -->
   <div id="modalAdmin" class="modal-overlay">
     <div class="modal-box">
-      <h3 style="margin-top:0; color:#0d47a1;">Masuk Dasbor Admin</h3>
+      <h3 style="margin-top:0; color:#b89028;">Masuk Dasbor Admin</h3>
       <p>Masukkan Password Admin:</p>
       <input type="password" id="passAdminInput" placeholder="Password Admin"><br>
       <button class="btn btn-primary" onclick="submitLoginAdmin()">Masuk</button>
@@ -135,8 +126,8 @@
   <!-- Modal Detail & Perbesar Foto Karyawan -->
   <div id="modalBiodata" class="modal-overlay">
     <div class="modal-box">
-      <h3 style="margin-top:0; color:#0d47a1;">Detail & Biodata Karyawan</h3>
-      <img id="biodataFoto" src="" alt="Foto Karyawan" style="width: 180px; height: 180px; border-radius: 50%; object-fit: cover; border: 4px solid #0d47a1; margin-bottom: 15px;">
+      <h3 style="margin-top:0; color:#b89028;">Detail & Biodata Karyawan</h3>
+      <img id="biodataFoto" src="" alt="Foto Karyawan" style="width: 180px; height: 180px; border-radius: 50%; object-fit: cover; border: 4px solid #b89028; margin-bottom: 15px;">
       <div id="biodataContent" style="text-align: left; line-height: 1.6; background: #f8f9fa; padding: 15px; border-radius: 8px;"></div>
       <br>
       <button class="btn btn-secondary" onclick="tutupModalBiodata()">Tutup</button>
@@ -147,16 +138,16 @@
     
     <!-- Top Bar -->
     <div class="top-bar">
-      <span style="font-weight: bold; color: #0d47a1;">Aplikasi Presensi Karyawan</span>
+      <span style="font-weight: bold; color: #b89028;">Hotel Grand El Hajj Banten</span>
       <div>
-        <button id="btn-login-admin" class="btn btn-admin" onclick="bukaModalAdmin()">🔑 Buka Dasbor Admin</button>
+        <button id="btn-login-admin" class="btn btn-admin" onclick="bukaModalAdmin()">🔑 Dasbor Admin</button>
         <button id="btn-logout-admin" class="btn btn-danger" onclick="logoutAdmin()" style="display: none;">🚪 Keluar Admin</button>
       </div>
     </div>
 
     <!-- Teks Berjalan Utama Header -->
     <div class="running-text-container">
-      <marquee id="marqueeText" behavior="scroll" direction="left">Selamat Datang di Aplikasi Presensi Karyawan. Dimohon untuk selalu melakukan verifikasi kehadiran tepat waktu.</marquee>
+      <marquee id="marqueeText" behavior="scroll" direction="left">Selamat Datang di Aplikasi Presensi Hotel Grand El Hajj Banten. Dimohon untuk selalu melakukan verifikasi kehadiran tepat waktu.</marquee>
     </div>
 
     <!-- Status AI Wajah & Firebase -->
@@ -166,28 +157,25 @@
 
     <!-- Header Logo & Bismillah -->
     <div class="header-section">
-      <img id="logo-img" src="logo.png" alt="Logo Perusahaan"><br>
+      <img id="logo-img" src="logo.jpeg" alt="Hotel Grand El Hajj Banten Logo"><br>
       <div class="header-arabic">بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ</div>
       <div class="sub-title">"Awali setiap pekerjaanmu dengan Bismillah"</div>
     </div>
 
     <!-- HALAMAN UTAMA KARYAWAN -->
     <div id="page-karyawan">
-      <!-- Lampiran Teks Informasi Karyawan & Teks Berjalan Lampiran (Diberi Background Samar) -->
       <div class="card card-lampiran" style="border-left-color: #2e7d32;">
         <div class="card-lampiran-content">
           <h4 style="margin-top: 0; color: #2e7d32;">📌 Pengumuman / Lampiran Karyawan:</h4>
           <div id="displayLampiranTeks" style="white-space: pre-line; color: #333;">Memuat lampiran...</div>
         </div>
-        
-        <!-- Teks Berjalan Khusus Lampiran Karyawan -->
         <div class="running-text-lampiran">
           📢 <marquee id="marqueeLampiranKaryawan" behavior="scroll" direction="left" style="display: inline-block; vertical-align: middle; width: 90%;">Pengumuman penting untuk seluruh karyawan akan tampil berjalan di sini.</marquee>
         </div>
       </div>
 
       <div class="card" id="sec-kode-unik">
-        <h3 style="color: #0d47a1;">Validasi Akses Presensi Karyawan</h3>
+        <h3 style="color: #b89028;">Validasi Akses Presensi Karyawan</h3>
         <p>Masukkan Kode Unik Anda sebelum melakukan presensi:</p>
         <input type="password" id="inputKodeUnik" placeholder="Masukkan Kode Unik Karyawan">
         <br>
@@ -195,7 +183,7 @@
       </div>
 
       <div class="card" id="sec-absen" style="display: none;">
-        <h3 style="color: #0d47a1;">Pemindaian Verifikasi Wajah & Lokasi</h3>
+        <h3 style="color: #b89028;">Pemindaian Verifikasi Wajah & Lokasi</h3>
         <p>Karyawan Teridentifikasi: <strong id="labelNamaKaryawan">-</strong></p>
         
         <div class="webcam-box">
@@ -210,12 +198,11 @@
     <!-- DASBOR ADMIN -->
     <div id="page-admin" style="display: none;">
       <div class="card">
-        <h2 style="color: #0d47a1; margin-top: 0;">Panel Kontrol Dasbor Admin</h2>
+        <h2 style="color: #b89028; margin-top: 0;">Panel Kontrol Dasbor Admin</h2>
         
-        <!-- Lampiran Admin / Teks Berjalan Admin (Diberi Background Samar) -->
-        <div class="card card-lampiran" style="border-left-color: #0d47a1;">
+        <div class="card card-lampiran" style="border-left-color: #b89028;">
           <div class="card-lampiran-content">
-            <h4 style="margin-top: 0; color: #0d47a1;">📌 Info / Lampiran Dasbor Admin:</h4>
+            <h4 style="margin-top: 0; color: #b89028;">📌 Info / Lampiran Dasbor Admin:</h4>
             <div id="displayLampiranAdmin" style="white-space: pre-line; color: #333; margin-bottom: 8px;">Memuat lampiran admin...</div>
           </div>
           <div class="running-text-container" style="margin-bottom: 0; position: relative; z-index: 2;">
@@ -232,10 +219,10 @@
 
         <hr>
 
-        <!-- Form Pengaturan Titik Lokasi Kantor (Geofencing) -->
-        <div style="margin-bottom: 20px; background: #e8eaf6; padding: 15px; border-radius: 8px;">
-          <h4 style="margin-top:0; color:#1a237e;">Pengaturan Lokasi Kantor & Radius Absensi (Geofencing)</h4>
-          <p style="font-size: 13px; color: #333;">Masukkan Latitude, Longitude kantor, dan Radius maksimal (dalam Meter) yang diperbolehkan untuk absen.</p>
+        <!-- Form Geofencing -->
+        <div style="margin-bottom: 20px; background: #fffdf0; padding: 15px; border-radius: 8px; border: 1px solid #e0d0a0;">
+          <h4 style="margin-top:0; color:#b89028;">Pengaturan Lokasi Kantor & Radius Absensi (Geofencing)</h4>
+          <p style="font-size: 13px; color: #333;">Masukkan Latitude, Longitude kantor, dan Radius maksimal (dalam Meter).</p>
           <input type="text" id="cfgLat" placeholder="Latitude Kantor (Contoh: -6.175392)"><br>
           <input type="text" id="cfgLng" placeholder="Longitude Kantor (Contoh: 106.827153)"><br>
           <input type="text" id="cfgRadius" placeholder="Radius Maksimal (Meter, Contoh: 100)"><br>
@@ -314,9 +301,6 @@
   </div>
 
   <script>
-    // -------------------------------------------------------------------
-    // KONFIGURASI FIREBASE ANDA
-    // -------------------------------------------------------------------
     const firebaseConfig = {
       apiKey: "AIzaSyA8NMHG5gFfcgiDFqCw57OB9bEWdqqHVOw",
       authDomain: "absensi-karyawan-df06f.firebaseapp.com",
@@ -338,14 +322,17 @@
     let currentStream = null;
     let isAiLoaded = false;
     
-    // Variabel Pengaturan Lokasi Absen Kantor
     let kantorLat = null;
     let kantorLng = null;
-    let maxRadiusMeter = 100; // Default radius 100 meter
+    let maxRadiusMeter = 100;
 
-    // Fungsi Menghitung Jarak GPS Antara 2 Koordinat (Rumus Haversine) dalam Meter
+    window.addEventListener('DOMContentLoaded', () => {
+      muatDataFirebase();
+      initFaceAI();
+    });
+
     function hitungJarakMeter(lat1, lon1, lat2, lon2) {
-      const R = 6371000; // Radius bumi dalam meter
+      const R = 6371000;
       const dLat = (lat2 - lat1) * Math.PI / 180;
       const dLon = (lon2 - lon1) * Math.PI / 180;
       const a = 
@@ -353,12 +340,10 @@
         Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
         Math.sin(dLon/2) * Math.sin(dLon/2);
       const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-      return R * c; // Hasil dalam satuan meter
+      return R * c;
     }
 
-    // Membaca Konfigurasi & Data dari Firebase Realtime
     function muatDataFirebase() {
-      // Load Pengaturan (Logo, Teks Berjalan, Lampiran Teks, Background, & Lokasi)
       db.collection('settings').doc('app_config').onSnapshot((doc) => {
         if (doc.exists) {
           const data = doc.data();
@@ -375,12 +360,10 @@
             document.getElementById('marqueeLampiranAdmin').innerText = data.runningTextLampiran;
           }
 
-          // Background Lampiran Transparan/Samar
           if (data.bgLampiranUrl) {
             document.documentElement.style.setProperty('--bg-lampiran-url', `url('${data.bgLampiranUrl}')`);
           }
 
-          // Load Pengaturan Geofencing Lokasi Kantor
           if (data.kantorLat !== undefined) {
             kantorLat = data.kantorLat;
             document.getElementById('cfgLat').value = data.kantorLat;
@@ -396,7 +379,6 @@
         }
       });
 
-      // Load Data Karyawan Realtime
       db.collection('karyawan').onSnapshot((snapshot) => {
         daftarKaryawan = [];
         snapshot.forEach((doc) => {
@@ -488,7 +470,6 @@
       } else if (pass !== null) alert("Password Salah!");
     }
 
-    // GANTI BACKGROUND LAMPIRAN SAMAR
     async function ubahBackgroundLampiran() {
       const pass = prompt("Masukkan Password Ganti Background Lampiran:\n(Password: background@1234#)");
       if (pass === "background@1234#") {
@@ -502,7 +483,6 @@
       } else if (pass !== null) alert("Password Salah!");
     }
 
-    // GANTI TEKS BERJALAN & LAMPIRAN KARYAWAN & ADMIN
     async function ubahPengumuman() {
       const pass = prompt("Masukkan Password Pengaturan Teks:\n(Password: teks@1234#)");
       if (pass === "teks@1234#") {
@@ -524,7 +504,6 @@
       } else if (pass !== null) alert("Password Salah!");
     }
 
-    // SIMPAN PENGATURAN LOKASI KANTOR
     async function simpanLokasiKantor() {
       const lat = parseFloat(document.getElementById('cfgLat').value);
       const lng = parseFloat(document.getElementById('cfgLng').value);
@@ -607,7 +586,7 @@
         tr.innerHTML = `
           <td>${index + 1}</td>
           <td><img src="${avatarUrl}" class="img-avatar" onclick="tampilkanBiodata('${item.docId}')" alt="Foto"></td>
-          <td><a href="javascript:void(0)" style="text-decoration:none; color:#1976d2; font-weight:bold;" onclick="tampilkanBiodata('${item.docId}')">${item.nama}</a></td>
+          <td><a href="javascript:void(0)" style="text-decoration:none; color:#b89028; font-weight:bold;" onclick="tampilkanBiodata('${item.docId}')">${item.nama}</a></td>
           <td>${item.nik}</td>
           <td>${item.jabatan}</td>
           <td><code>${item.kodeUnik}</code></td>
@@ -618,7 +597,6 @@
       });
     }
 
-    // MODAL MEMPERBESAR FOTO & BIODATA KARYAWAN
     function tampilkanBiodata(docId) {
       const k = daftarKaryawan.find(item => item.docId === docId);
       if (!k) return;
@@ -670,7 +648,6 @@
       const infoDiv = document.getElementById('infoLokasi');
       infoDiv.innerHTML = "<em>Memindai lokasi GPS & Verifikasi Wajah...</em>";
 
-      // 1. CEK PERSYARATAN LOKASI KANTOR (GEOFENCING)
       if (!navigator.geolocation) {
         alert("Fitur Geolocation tidak didukung di peramban/perangkat Anda.");
         return;
@@ -690,63 +667,73 @@
           }
         }
 
-        // 2. JIKA LOKASI MASUK RADIUS, VERIFIKASI WAJAH AI
         const videoElem = document.getElementById('webcamKaryawan');
-        const currentDetection = await faceapi.detectSingleFace(videoElem).withFaceLandmarks().withFaceDescriptor();
+        const detection = await faceapi.detectSingleFace(videoElem).withFaceLandmarks().withFaceDescriptor();
 
-        if (!currentDetection) {
-          infoDiv.innerHTML = "<span style='color:red;'>Wajah Tidak Terdeteksi!</span>";
+        if (!detection) {
+          infoDiv.innerHTML = "<span style='color:red;'>❌ Wajah tidak terdeteksi! Pastikan kamera mengarah ke wajah Anda.</span>";
           return;
         }
 
-        const masterDescriptor = new Float32Array(karyawanAktif.faceDescriptor);
-        const distance = faceapi.euclideanDistance(masterDescriptor, currentDetection.descriptor);
-
-        if (distance > 0.52) {
-          infoDiv.innerHTML = "<span style='color:red;'>❌ Wajah Tidak Cocok!</span>";
-          return;
+        if (karyawanAktif.faceDescriptor) {
+          const distance = faceapi.euclideanDistance(detection.descriptor, karyawanAktif.faceDescriptor);
+          if (distance > 0.6) {
+            infoDiv.innerHTML = "<span style='color:red;'>❌ Verifikasi Gagal! Wajah tidak cocok dengan data registrasi.</span>";
+            return;
+          }
         }
 
-        // 3. PROSES ABSENSI BERHASIL
         try {
           await db.collection('karyawan').doc(karyawanAktif.docId).update({
             totalHadir: firebase.firestore.FieldValue.increment(1),
-            lastLatitude: userLat,
-            lastLongitude: userLng,
             lastAbsen: new Date()
           });
-          infoDiv.innerHTML = `✓ Presensi Berhasil (${karyawanAktif.nama})`;
-          alert(`Presensi Berhasil untuk ${karyawanAktif.nama}`);
-        } catch (err) { alert("Gagal update ke Firebase: " + err.message); }
-
+          infoDiv.innerHTML = "<span style='color:green;'>✅ Presensi Berhasil Dicatat! Terima Kasih.</span>";
+          alert(`Presensi Berhasil untuk ${karyawanAktif.nama}!`);
+          setTimeout(() => location.reload(), 2000);
+        } catch (err) {
+          infoDiv.innerHTML = "<span style='color:red;'>Gagal menyimpan presensi: " + err.message + "</span>";
+        }
       }, (err) => {
-        infoDiv.innerHTML = "<span style='color:red;'>❌ Gagal membaca lokasi GPS. Pastikan izin lokasi (GPS) diaktifkan!</span>";
+        alert("Gagal mengesahkan lokasi GPS: " + err.message);
       });
     }
 
     function renderGrafik() {
-      if (chartPie) chartPie.destroy();
-      if (chartBar) chartBar.destroy();
-      const ctxPie = document.getElementById('pieChart').getContext('2d');
-      const ctxBar = document.getElementById('barChart').getContext('2d');
       const labels = daftarKaryawan.map(k => k.nama);
       const dataHadir = daftarKaryawan.map(k => k.totalHadir || 0);
 
+      if (chartPie) chartPie.destroy();
+      if (chartBar) chartBar.destroy();
+
+      const ctxPie = document.getElementById('pieChart').getContext('2d');
       chartPie = new Chart(ctxPie, {
         type: 'pie',
-        data: { labels, datasets: [{ data: dataHadir, backgroundColor: ['#1976d2', '#0288d1', '#2e7d32', '#f57c00', '#616161'] }] }
+        data: {
+          labels: labels,
+          datasets: [{
+            data: dataHadir,
+            backgroundColor: ['#b89028', '#2e7d32', '#1976d2', '#d32f2f', '#f57c00', '#7b1fa2']
+          }]
+        }
       });
+
+      const ctxBar = document.getElementById('barChart').getContext('2d');
       chartBar = new Chart(ctxBar, {
         type: 'bar',
-        data: { labels, datasets: [{ label: 'Hari Hadir', data: dataHadir, backgroundColor: '#1976d2' }] },
-        options: { scales: { y: { beginAtZero: true } } }
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Total Kehadiran',
+            data: dataHadir,
+            backgroundColor: '#b89028'
+          }]
+        },
+        options: {
+          scales: { y: { beginAtZero: true } }
+        }
       });
     }
-
-    window.onload = function() {
-      initFaceAI();
-      muatDataFirebase();
-    };
   </script>
 </body>
 </html>
